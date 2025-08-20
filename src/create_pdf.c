@@ -37,6 +37,7 @@
 #include "embedded_images/tick_erased.jpg.h"
 #include "embedded_images/redcross.h"
 #include "embedded_images/nwipe_exclamation.jpg.h"
+#include "embedded_images/logo.jpg.h"
 #include "logging.h"
 #include "options.h"
 #include "prng.h"
@@ -121,7 +122,7 @@ int create_pdf( nwipe_context_t* ptr )
     pdf = pdf_create( PDF_A4_WIDTH, PDF_A4_HEIGHT, &info );
 
     /* Create footer text string and append the version */
-    snprintf( pdf_footer, sizeof( pdf_footer ), "Disc Erasure by NWIPE version %s", version_string );
+ /*   snprintf( pdf_footer, sizeof( pdf_footer ), "Disc Erasure by NWIPE version %s", version_string ); */
 
     pdf_set_font( pdf, "Helvetica" );
     struct pdf_object* page_1 = pdf_append_page( pdf );
@@ -133,23 +134,43 @@ int create_pdf( nwipe_context_t* ptr )
      * Create header and footer on page 1, with the exception of the green
      * tick/red icon which is set from the 'status' section below
      */
-    pdf_add_text_wrap( pdf, NULL, pdf_footer, 12, 0, 30, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
-    pdf_add_line( pdf, NULL, 50, 50, 550, 50, 3, PDF_BLACK );
+ /*   pdf_add_text_wrap( pdf, NULL, pdf_footer, 12, 0, 30, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height ); */
+ /*   pdf_add_line( pdf, NULL, 50, 30, 550, 30, 3, PDF_BLACK );	*/
     pdf_add_line( pdf, NULL, 50, 650, 550, 650, 3, PDF_BLACK );
-    pdf_add_image_data( pdf, NULL, 45, 665, 100, 100, bin2c_shred_db_jpg, 27063 );
+    pdf_add_image_data( pdf, NULL, 45, 665, 50, 50, bin2c_shred_db_jpg, 27063 );
     pdf_set_font( pdf, "Helvetica-Bold" );
     snprintf( model_header, sizeof( model_header ), " %s: %s ", "Model", c->device_model );
-    pdf_add_text_wrap( pdf, NULL, model_header, 14, 0, 755, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
+    pdf_add_text_wrap( pdf, NULL, model_header, 14, 0, 750, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
     snprintf( serial_header, sizeof( serial_header ), " %s: %s ", "S/N", c->device_serial_no );
-    pdf_add_text_wrap( pdf, NULL, serial_header, 14, 0, 735, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
+    pdf_add_text_wrap( pdf, NULL, serial_header, 14, 0, 730, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
     pdf_set_font( pdf, "Helvetica" );
 
     pdf_add_text_wrap( pdf, NULL, "Disk Erasure Report", 24, 0, 695, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
-    snprintf( barcode, sizeof( barcode ), "%s:%s", c->device_model, c->device_serial_no );
+ /*   snprintf( barcode, sizeof( barcode ), "%s:%s", c->device_model, c->device_serial_no ); */
     pdf_add_text_wrap(
         pdf, NULL, "Page 1 - Erasure Status", 14, 0, 670, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
-    pdf_add_barcode( pdf, NULL, PDF_BARCODE_128A, 100, 790, 400, 25, barcode, PDF_BLACK );
+  /*  pdf_add_barcode( pdf, NULL, PDF_BARCODE_128A, 100, 790, 400, 25, barcode, PDF_BLACK ); */
+	// Logo links oben, etwas größer
+	double page_w = 595.0;   // A4 Seitenbreite in pt
+	double logo_w = 180.0; 
+	double logo_h = 28.0;  
+	double logo_x = page_w - logo_w - 20.0; // rechter Rand = 20pt
+	double logo_y = 800.0;   // oben gleich lassen
 
+	pdf_add_image_data( pdf, NULL, logo_x, logo_y, logo_w, logo_h, bin2c_logo_jpg, 211199);
+	
+	/* Linie unter dem Logo */
+
+/*	double line_x1 = logo_x - 10.0;                   // etwas breiter links
+	double line_x2 = logo_x + logo_w + 10.0;          // etwas breiter rechts
+	double line_y  = logo_y - 4.0;           // leicht unter dem Bild
+
+	pdf_add_line( pdf, NULL, line_x1, line_y, line_x2, line_y, 1, PDF_BLACK ); */
+
+ 	// Version unten rechts einfügen
+	pdf_set_font(pdf, "Helvetica");
+	pdf_add_text(pdf, NULL, "Version 1.0", 8, page_width - 60, 15, PDF_GRAY);
+	
     /* ------------------------ */
     /* Organisation Information */
 
@@ -391,7 +412,7 @@ int create_pdf( nwipe_context_t* ptr )
         pdf_add_ellipse( pdf, NULL, 390, 295, 45, 10, 2, PDF_DARK_GREEN, PDF_TRANSPARENT );
 
         /* Display the green tick icon in the header */
-        pdf_add_image_data( pdf, NULL, 450, 665, 100, 100, bin2c_te_jpg, 54896 );
+        pdf_add_image_data( pdf, NULL, 500, 665, 50, 50, bin2c_te_jpg, 54896 );
         status_icon = STATUS_ICON_GREEN_TICK;  // used later on page 2
     }
     else
@@ -404,7 +425,7 @@ int create_pdf( nwipe_context_t* ptr )
             pdf_add_text( pdf, NULL, "See Warning !", 12, 450, 290, PDF_RED );
 
             /* Display the yellow exclamation icon in the header */
-            pdf_add_image_data( pdf, NULL, 450, 665, 100, 100, bin2c_nwipe_exclamation_jpg, 65791 );
+            pdf_add_image_data( pdf, NULL, 500, 665, 50, 50, bin2c_nwipe_exclamation_jpg, 65791 );
             status_icon = STATUS_ICON_YELLOW_EXCLAMATION;  // used later on page 2
         }
         else
@@ -415,7 +436,7 @@ int create_pdf( nwipe_context_t* ptr )
                 pdf_add_text( pdf, NULL, c->wipe_status_txt, 12, 370, 290, PDF_RED );
 
                 // Display the red cross in the header
-                pdf_add_image_data( pdf, NULL, 450, 665, 100, 100, bin2c_redcross_jpg, 60331 );
+                pdf_add_image_data( pdf, NULL, 500, 665, 50, 50, bin2c_redcross_jpg, 60331 );
                 status_icon = STATUS_ICON_RED_CROSS;  // used later on page 2
             }
             else
@@ -423,7 +444,7 @@ int create_pdf( nwipe_context_t* ptr )
                 pdf_add_text( pdf, NULL, c->wipe_status_txt, 12, 360, 290, PDF_RED );
 
                 // Print the red cross
-                pdf_add_image_data( pdf, NULL, 450, 665, 100, 100, bin2c_redcross_jpg, 60331 );
+                pdf_add_image_data( pdf, NULL, 500, 665, 50, 50, bin2c_redcross_jpg, 60331 );
                 status_icon = STATUS_ICON_RED_CROSS;  // used later on page 2
             }
             pdf_add_ellipse( pdf, NULL, 390, 295, 45, 10, 2, PDF_RED, PDF_TRANSPARENT );
@@ -773,24 +794,55 @@ int create_pdf( nwipe_context_t* ptr )
             pdf, NULL, "** DDNSHPA = Drive does not support HPA/DCO", text_size_data, 60, 125, PDF_DARK_GREEN );
     }
     pdf_set_font( pdf, "Helvetica" );
+	
+    /* -------------------------
+	 * Disposition / Handling
+	 */
+	// Disposition of Device – mit gleichem Abstand wie andere Überschriften
+	double disp_line_y = 120.0; // Linie
+	pdf_add_line(pdf, NULL, 50, disp_line_y, 550, disp_line_y, 1, PDF_GRAY);
+	pdf_add_text(pdf, NULL, "Disposition of Device", 12, 50, disp_line_y - 20, PDF_BLUE);
 
-    /************************
-     * Technician/Operator ID
-     */
-    pdf_add_line( pdf, NULL, 50, 120, 550, 120, 1, PDF_GRAY );
-    pdf_add_text( pdf, NULL, "Technician/Operator ID", 12, 50, 100, PDF_BLUE );
-    pdf_add_text( pdf, NULL, "Name/ID:", 12, 60, 80, PDF_GRAY );
-    pdf_add_text( pdf, NULL, "Signature:", 12, 300, 100, PDF_BLUE );
-    pdf_add_line( pdf, NULL, 360, 65, 550, 66, 1, PDF_GRAY );
+	// Checkboxen darunter
+	double cb_size = 8.0;
+	double cb_y = disp_line_y - 35;
 
-    pdf_set_font( pdf, "Helvetica-Bold" );
-    /* Obtain organisational details from nwipe.conf - See conf.c */
-    setting = config_lookup( &nwipe_cfg, "Organisation_Details" );
-    if( config_setting_lookup_string( setting, "Op_Tech_Name", &op_tech_name ) )
-    {
-        pdf_add_text( pdf, NULL, op_tech_name, text_size_data, 120, 80, PDF_BLACK );
-    }
-    pdf_set_font( pdf, "Helvetica" );
+	// Mechanisch vernichtet
+	pdf_add_rectangle(pdf, NULL, 60, cb_y, cb_size, cb_size, 1, PDF_BLACK);
+	pdf_add_text(pdf, NULL, "Mechanically destroyed", text_size_data, 75, cb_y, PDF_BLACK);
+
+	// An Kunden zurückgegeben
+	cb_y -= 12;
+	pdf_add_rectangle(pdf, NULL, 60, cb_y, cb_size, cb_size, 1, PDF_BLACK);
+	pdf_add_text(pdf, NULL, "Returned to customer", text_size_data, 75, cb_y, PDF_BLACK);
+
+	cb_y += 12;
+	// Anderes Verfahren
+	pdf_add_rectangle(pdf, NULL, 205, cb_y, cb_size, cb_size, 1, PDF_BLACK);
+	pdf_add_text(pdf, NULL, "Other method:", text_size_data, 220, cb_y, PDF_BLACK);
+	pdf_add_line(pdf, NULL, 295, cb_y - 1, 445, cb_y - 1, 1, PDF_BLACK);
+
+	  /************************
+	 * Technician/Operator ID
+	 */
+	double tech_line_y = 55.0; // Linie
+	pdf_add_line(pdf, NULL, 50, tech_line_y + 5, 550, tech_line_y + 5, 1, PDF_GRAY);
+
+	// Inhalte darunter
+	double tech_block_y = tech_line_y - 25;
+
+	pdf_add_text(pdf, NULL, "Technician/Operator ID", 12, 50, tech_block_y + 10, PDF_BLUE);
+	pdf_add_text(pdf, NULL, "Name/ID:", 12, 60, tech_block_y - 5, PDF_GRAY);
+	pdf_add_text(pdf, NULL, "Signature:", 12, 300, tech_block_y + 10, PDF_BLUE);
+	pdf_add_line(pdf, NULL, 360, tech_block_y - 1, 550, tech_block_y - 1, 1, PDF_GRAY);
+
+	pdf_set_font(pdf, "Helvetica-Bold");
+	setting = config_lookup(&nwipe_cfg, "Organisation_Details");
+	if (config_setting_lookup_string(setting, "Op_Tech_Name", &op_tech_name)) {
+		pdf_add_text(pdf, NULL, op_tech_name, text_size_data, 120, tech_block_y -5, PDF_BLACK);
+	}
+	pdf_set_font(pdf, "Helvetica");
+
 
     /***************************************
      * Populate page 2 and 3 with smart data
@@ -974,22 +1026,40 @@ void create_header_and_footer( nwipe_context_t* c, char* page_title )
      * Create header and footer on most recently added page, with the exception
      * of the green tick/red icon which is set from the 'status' section below.
      */
-    pdf_add_text_wrap( pdf, NULL, pdf_footer, 12, 0, 30, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
-    pdf_add_line( pdf, NULL, 50, 50, 550, 50, 3, PDF_BLACK );
+   /* pdf_add_text_wrap( pdf, NULL, pdf_footer, 12, 0, 30, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height ); */
+  /*  pdf_add_line( pdf, NULL, 50, 30, 550, 30, 3, PDF_BLACK );	*/
     pdf_add_line( pdf, NULL, 50, 650, 550, 650, 3, PDF_BLACK );
-    pdf_add_image_data( pdf, NULL, 45, 665, 100, 100, bin2c_shred_db_jpg, 27063 );
+    pdf_add_image_data( pdf, NULL, 45, 665, 50, 50, bin2c_shred_db_jpg, 27063 );
     pdf_set_font( pdf, "Helvetica-Bold" );
     snprintf( model_header, sizeof( model_header ), " %s: %s ", "Model", c->device_model );
-    pdf_add_text_wrap( pdf, NULL, model_header, 14, 0, 755, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
+    pdf_add_text_wrap( pdf, NULL, model_header, 14, 0, 750, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
     snprintf( serial_header, sizeof( serial_header ), " %s: %s ", "S/N", c->device_serial_no );
-    pdf_add_text_wrap( pdf, NULL, serial_header, 14, 0, 735, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
+    pdf_add_text_wrap( pdf, NULL, serial_header, 14, 0, 730, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
     pdf_set_font( pdf, "Helvetica" );
 
     pdf_add_text_wrap( pdf, NULL, "Disk Erasure Report", 24, 0, 695, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
-    snprintf( barcode, sizeof( barcode ), "%s:%s", c->device_model, c->device_serial_no );
+ /*   snprintf( barcode, sizeof( barcode ), "%s:%s", c->device_model, c->device_serial_no ); */
     pdf_add_text_wrap( pdf, NULL, page_title, 14, 0, 670, PDF_BLACK, page_width, PDF_ALIGN_CENTER, &height );
-    pdf_add_barcode( pdf, NULL, PDF_BARCODE_128A, 100, 790, 400, 25, barcode, PDF_BLACK );
+  /*  pdf_add_barcode( pdf, NULL, PDF_BARCODE_128A, 100, 790, 400, 25, barcode, PDF_BLACK ); */
+  
+	// Logo links oben, etwas größer
+	double logo_w = 180.0;  
+	double logo_h = 28.0;  
+	double logo_x = 20.0;     // Linker Rand
+	double logo_y = 800.0;    // Oben
 
+	pdf_add_image_data( pdf, NULL, logo_x, logo_y, logo_w, logo_h, bin2c_logo_jpg, 211199);
+
+	
+	
+	/* Linie unter dem Logo */
+
+/*	double line_x1 = logo_x - 10.0;                   // etwas breiter links
+	double line_x2 = logo_x + logo_w + 10.0;          // etwas breiter rechts
+	double line_y  = logo_y - 4.0;           // leicht unter dem Bild
+	
+	pdf_add_line( pdf, NULL, line_x1, line_y, line_x2, line_y, 1, PDF_BLACK ); */
+	
     /**********************************************************
      * Display the appropriate status icon, top right on page on
      * most recently added page.
@@ -999,23 +1069,27 @@ void create_header_and_footer( nwipe_context_t* c, char* page_title )
         case STATUS_ICON_GREEN_TICK:
 
             /* Display the green tick icon in the header */
-            pdf_add_image_data( pdf, NULL, 450, 665, 100, 100, bin2c_te_jpg, 54896 );
+            pdf_add_image_data( pdf, NULL, 500, 665, 50, 50, bin2c_te_jpg, 54896 );
             break;
 
         case STATUS_ICON_YELLOW_EXCLAMATION:
 
             /* Display the yellow exclamation icon in the header */
-            pdf_add_image_data( pdf, NULL, 450, 665, 100, 100, bin2c_nwipe_exclamation_jpg, 65791 );
+            pdf_add_image_data( pdf, NULL, 500, 665, 50, 50, bin2c_nwipe_exclamation_jpg, 65791 );
             break;
 
         case STATUS_ICON_RED_CROSS:
 
             // Display the red cross in the header
-            pdf_add_image_data( pdf, NULL, 450, 665, 100, 100, bin2c_redcross_jpg, 60331 );
+            pdf_add_image_data( pdf, NULL, 500, 665, 50, 50, bin2c_redcross_jpg, 60331 );
             break;
 
         default:
 
             break;
     }
+	// Version unten rechts
+	pdf_set_font(pdf, "Helvetica");
+	pdf_add_text(pdf, NULL, "Version 1.0", 8, page_width - 60, 15, PDF_GRAY);
+
 }
